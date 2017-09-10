@@ -22,100 +22,10 @@
 "use strict";
 
 // OSCs
-
 var oscs = require("./oscs.js");
 
-var osc_sin    = oscs.osc_sin;
-var osc_saw    = oscs.osc_saw;
-var osc_square = oscs.osc_square;
-var osc_tri    = oscs.osc_tri;
-
-
-// Pinking
-
-var b0, b1, b2, b3, b4, b5, b6;
-    b0 = b1 = b2 = b3 = b4 = b5 = b6 = 0.0;
-
-function effect_pinking(input,val)
-{
-  b0 = 0.99886 * b0 + input * 0.0555179;
-  b1 = 0.99332 * b1 + input * 0.0750759;
-  b2 = 0.96900 * b2 + input * 0.1538520;
-  b3 = 0.86650 * b3 + input * 0.3104856;
-  b4 = 0.55000 * b4 + input * 0.5329522;
-  b5 = -0.7616 * b5 - input * 0.0168980;
-  var output = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + input * 0.5362) * 0.1;
-  b6 = input * 0.115926;
-
-  return (output * val) + (input * (1 - val));
-}
-
-// Compressor
-
-function effect_compressor(input,average,val)
-{
-  var output = input;
-  if(input < average){
-    output *= 1 + val;
-  }
-  else if(input > average){
-    output *= 1 - val;
-  }
-  return output;
-}
-
-function make_compressor_average(length,samples)
-{
-  var compressor_average = 0;
-  for (var j = 0; j < length; j++) {
-    compressor_average += samples[j];
-  }
-  return compressor_average/parseFloat(length);
-}
-
-// Distortion
-
-function effect_distortion(input,val)
-{
-  if(!val){ return input; }
-
-  var output = input;
-  output *= val;
-  output = output < 1 ? output > -1 ? osc_sin(output*.25) : -1 : 1;
-  output /= val;
-  return output;
-}
-
-// Drive
-
-function effect_drive(input,val)
-{
-  var output = input;
-  return output * val;
-}
-
-// Reverb
-
-function effect_reverb(input,val)
-{
-  if (!val) { return input; } // pass-thru if no val
-
-  var delay = val;
-  var delaySamples = Number(delay / 1000.0 * sampleRate);
-  var decay = 0.5;
-  for (var i = 0; i < input.length - delaySamples; i++)
-  {
-    // TODO: overflow check
-    input[i + delaySamples] += input[i] * decay;
-  }
-}
-
-/*
- * 
- */
-function util_fft(unzip, zip)
-{
-}
+// FX
+var effects = require("./effects.js");
 
 
 var CJammer = function () {
@@ -159,10 +69,10 @@ var CJammer = function () {
 
   // Array of oscillator functions.
   var mOscillators = [
-    osc_sin,
-    osc_square,
-    osc_saw,
-    osc_tri
+    oscs.osc_sin,
+    oscs.osc_square,
+    oscs.osc_saw,
+    oscs.osc_tri
   ];
 
   // Fill the buffer with more audio, and advance state accordingly.
@@ -336,10 +246,10 @@ var CJammer = function () {
         band += f * high;
         rsample = fxFilter == 3 ? band : fxFilter == 1 ? high : low;
 
-        rsample = effect_distortion(rsample,distortion_val);
-        rsample = effect_pinking(rsample,pinking_val/255);
-        rsample = effect_compressor(rsample,compressor_average,compressor_val/255);
-        rsample = effect_drive(rsample,drive_val);
+        rsample = effect.effect_distortion(rsample,distortion_val);
+        rsample = effect.effect_pinking(rsample,pinking_val/255);
+        rsample = effect.effect_compressor(rsample,compressor_average,compressor_val/255);
+        rsample = effect.effect_drive(rsample,drive_val);
 
         // Is the filter active (i.e. still audiable)?
         filterActive = rsample * rsample > 1e-5;
