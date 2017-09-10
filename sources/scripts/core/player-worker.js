@@ -23,27 +23,13 @@
 
 // OSCs
 
-var osc_sin = function (value)
-{
-  return Math.sin(value * 6.283184);
-};
+var oscs = require("./oscs.js");
 
-var osc_saw = function (value)
-{
-  return 2 * (value % 1) - 1;
-};
+var osc_sin    = oscs.osc_sin;
+var osc_saw    = oscs.osc_saw;
+var osc_square = oscs.osc_square;
+var osc_tri    = oscs.osc_tri;
 
-var osc_square = function (value)
-{
-  return (value % 1) < 0.5 ? 1 : -1;
-};
-
-var osc_tri = function (value)
-{
-  var v2 = (value % 1) * 4;
-  if(v2 < 2) return v2 - 1;
-  return 3 - v2;
-};
 
 // Pinking
 
