@@ -10,15 +10,16 @@ var Oscillator = function()
     return 0.5 + Math.sin(value * 2 * Math.PI);
   }
 
-  this.pulse_smooth = function(value)
+  this.pulse_smooth = function (value)
   {
-    return 0.05 / (Math.sin(2 * Math.PI * value) * Math.tan(2 * Math.PI * value));
+    value = 0.05 / (Math.sin(2 * Math.PI * value) * Math.tan(2 * Math.PI * value));
+    return clamp(value,-1.0,1.0);
   }
 
   this.saw = function(value)
   {
     return 2 * (value % 1) - 1;
-  };
+  }
 
   this.rev = function(value)
   {
@@ -28,7 +29,7 @@ var Oscillator = function()
   this.square = function(value)
   {
     return (value % 1) < 0.5 ? 1 : -1;
-  };
+  }
 
   this.noise = function(value)
   {
@@ -40,7 +41,7 @@ var Oscillator = function()
     var v2 = (value % 1) * 4;
     if (v2 < 2) return v2 - 1;
     return 3 - v2;
-  };
+  }
 
   // generates waveform from custom text
   // e.g.: 'sin(x)'
